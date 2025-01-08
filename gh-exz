@@ -26,7 +26,7 @@ LogshRun() { _dlm="####R#E#C#D#E#L#I#M#I#T#E#R####" && _all=$({ _out=$("$@") && 
 
 SubcommandUsageAndReturn() {
   cat <<EOF
-${EXE_FILENAME:?} - Update a comment that has a specific anchor string in a pull request.
+${EXE_FILENAME:?} - gh command extension to utilities.
 
 Usage:
   ${EXE_FILENAME:?} <SUBCOMMAND>
