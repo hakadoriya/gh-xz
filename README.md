@@ -1,4 +1,6 @@
-# gh-pr-update-comment
+# [`gh-pr-update-comment`](https://github.com/hakadoriya/gh-pr-update-comment)
+
+`gh-pr-update-comment` is a CLI tool to update a comment that has a specific anchor string in a pull request.
 
 ## CLI
 
@@ -6,13 +8,13 @@
 gh-pr-update-comment \
   user/repo \
   123 \
-  "<!-- anchor -->" \
-  "new body\n\n<!-- anchor -->"
+  '<!-- anchor -->' \
+  'new body <!-- anchor -->'
 ```
 
 ## GitHub Actions
 
-A workflow to update a comment in a pull request.
+A workflow for gh-pr-update-comment.
 
 ## example
 
@@ -35,6 +37,6 @@ jobs:
           repo: user/repo
           pr-number: 123
           comment-anchor-string: "<!-- anchor -->"
-          comment-new-body: "new body\n\n<!-- anchor -->"
+          comment-new-body: "new body <!-- anchor -->"
           debug: true
 ```
