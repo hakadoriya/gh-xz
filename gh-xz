@@ -36,6 +36,10 @@ SUBCOMMAND:
         Upsert a comment that has a specific anchor string in a pull request.
         Usage:
           ${EXE_FILENAME:?} pr-upsert-comment <OWNER/REPOSITORY> <PR_NUMBER> <ANCHOR_STRING> <COMMENT_NEW_BODY>
+    install
+        Install the extension.
+        Usage:
+          ${EXE_FILENAME:?} install
     help, usage
         Show this help message.
         Usage:
@@ -117,6 +121,10 @@ SubcommandPRUpsertComment() {
   fi
 }
 
+SubcommandInstall() {
+  LogshExec gh extension install "${GH_XZ_REPO:?}"
+}
+
 Main() {
   local subcmd="${1:-}"
 
@@ -124,6 +132,9 @@ Main() {
   "pr-upsert-comment")
     shift
     SubcommandPRUpsertComment "$@"
+    ;;
+  "install")
+    SubcommandInstall
     ;;
   "help" | "usage")
     SubcommandUsageAndReturn 0

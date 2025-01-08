@@ -26,6 +26,10 @@ SUBCOMMAND:
         Upsert a comment that has a specific anchor string in a pull request.
         Usage:
           gh-xz pr-upsert-comment <OWNER/REPOSITORY> <PR_NUMBER> <ANCHOR_STRING> <COMMENT_NEW_BODY>
+    install
+        Install the extension.
+        Usage:
+          gh-xz install
     help, usage
         Show this help message.
         Usage:
