@@ -112,7 +112,7 @@ runs:
           fi
         }
 
-        __main__ "${{ inputs.repo }}" "${{ inputs.pr-number }}" "${{ inputs.comment-anchor-string }}" "${{ inputs.comment-new-body }}"
+        __main__ '${{ inputs.repo }}' '${{ inputs.pr-number }}' '${{ inputs.comment-anchor-string }}' '${{ inputs.comment-new-body }}'
 
     - name: DEBUG
       if: always() && ${{ inputs.debug == 'true' }}
