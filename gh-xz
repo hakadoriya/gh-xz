@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -E -e -u -o pipefail
 
-declare -r EXE_FILENAME="gh-exz"
+declare -r EXE_FILENAME="gh-xz"
 declare -r LF=$'\n'
-declare -r GH_EXZ_REPO="https://github.com/hakadoriya/gh-exz"
+declare -r GH_XZ_REPO="https://github.com/hakadoriya/gh-xz"
 
 # LICENSE: https://github.com/hakadoriya/log.sh/blob/HEAD/LICENSE
 # Common
@@ -26,7 +26,7 @@ LogshRun() { _dlm="####R#E#C#D#E#L#I#M#I#T#E#R####" && _all=$({ _out=$("$@") && 
 
 SubcommandUsageAndReturn() {
   cat <<EOF
-${EXE_FILENAME:?} - gh command extension to utilities.
+${EXE_FILENAME:?} - gh command eXtension to utilitieZ.
 
 Usage:
   ${EXE_FILENAME:?} <SUBCOMMAND>
@@ -36,24 +36,12 @@ SUBCOMMAND:
         Upsert a comment that has a specific anchor string in a pull request.
         Usage:
           ${EXE_FILENAME:?} pr-upsert-comment <OWNER/REPOSITORY> <PR_NUMBER> <ANCHOR_STRING> <COMMENT_NEW_BODY>
-    install
-        Install this extension.
-        Usage:
-          ${EXE_FILENAME:?} install
-    self-update
-        Update this script itself.
-        Usage:
-          ${EXE_FILENAME:?} self-update
     help, usage
         Show this help message.
         Usage:
           ${EXE_FILENAME:?} help
 EOF
   return "${1:-0}"
-}
-
-SubcommandInstall() {
-  LogshExec gh extension install "${GH_EXZ_REPO:?}"
 }
 
 SubcommandPRUpsertComment() {
@@ -129,38 +117,13 @@ SubcommandPRUpsertComment() {
   fi
 }
 
-
-SubcommandSelfUpdate() {
-  local self_update_url="https://raw.githubusercontent.com/hakadoriya/gh-pr-update-comment/HEAD/${EXE_FILENAME:?}"
-  local script_file_path="${0:?}"
-  local tmp_dir=/tmp/gh-pr-update-comment
-  local tmp_file=${tmp_dir:?}/${EXE_FILENAME:?}
-  local backup_file="${tmp_file:?}.backup"
-  LogshNotice "Download ${self_update_url:?}"
-  mkdir -p "${tmp_dir:?}"
-  curl -LRSs "${self_update_url:?}" -o "${tmp_file:?}"
-  LogshNotice "Take backup ${script_file_path:?} to ${backup_file:?}"
-  LogshExec mv -f "${script_file_path:?}" "${backup_file:?}"
-  LogshNotice "Show the changes between old and new"
-  LogshExec diff -u "${backup_file:?}" "${tmp_file:?}" || true
-  LogshNotice "Update ${script_file_path:?} to ${self_update_url:?}"
-  LogshExec chmod +x "${tmp_file:?}"
-  LogshExec mv -f "${tmp_file:?}" "${script_file_path:?}"
-}
-
 Main() {
   local subcmd="${1:-}"
 
   case "${subcmd:-}" in
-  "install")
-    SubcommandInstall
-    ;;
   "pr-upsert-comment")
     shift
     SubcommandPRUpsertComment "$@"
-    ;;
-  "self-update")
-    SubcommandSelfUpdate
     ;;
   "help" | "usage")
     SubcommandUsageAndReturn 0
