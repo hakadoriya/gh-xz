@@ -16,12 +16,17 @@ jobs:
         with:
           # NOTE: If you want to fail on missing final newline, set this to true
           #fail-on-missing: true
+          # NOTE: If you want to check specific files, add regex patterns to paths
           #paths: |-
           #  ^action.yml
           #  ^missing-final-newline.md
+          # NOTE: If you want to ignore specific files, add regex patterns to paths-ignore
           paths-ignore: |-
+            .*\.gif$
             .*\.ico$
             .*\.png$
+            .*\.svg$
+            .*\.webp$
       - name: Submit PR comment if missing final newline
         if: ${{ steps.final-newline-checker.outputs.missing == 'true' }}
         env:
