@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -E -e -u -o pipefail
 
+exe_filename="gh-pr-update-comment"
+
 # LICENSE: https://github.com/hakadoriya/log.sh/blob/HEAD/LICENSE
 # Common
 if [ "${LOGSH_COLOR:-}" ] || [ -t 2 ]; then LOGSH_COLOR=true; else LOGSH_COLOR=''; fi
@@ -20,19 +22,38 @@ LogshEmergency() { test "${LOGSH_LEVEL:-0}" -gt 800 || echo "$*" | awk "{print \
 LogshExec() { LogshDebug "$ $(_logshCmd "$@")" && "$@"; }
 LogshRun() { _dlm="####R#E#C#D#E#L#I#M#I#T#E#R####" && _all=$({ _out=$("$@") && _rtn=$? || _rtn=$? && printf "\n%s" "${_dlm:?}${_out:-}" && return "${_rtn:-0}"; } 2>&1) && _rtn=$? || _rtn=$? && _dlmno=$(echo "${_all:-}" | sed -n "/${_dlm:?}/=") && _cmd=$(_logshCmd "$@") && _stdout=$(echo "${_all:-}" | tail -n +"${_dlmno:-1}" | sed "s/^${_dlm:?}//") && _stderr=$(echo "${_all:-}" | head -n "${_dlmno:-1}" | grep -v "^${_dlm:?}") && LogshInfo "$ ${_cmd:-}" && LogshInfo "${_stdout:-}" && { [ -z "${_stderr:-}" ] || LogshWarning "${_stderr:?}"; } && return "${_rtn:-0}"; }
 
-__main__() {
+SubcommandUsageAndReturn() {
+  cat <<EOF
+${exe_filename:?} - Update a comment that has a specific anchor string in a pull request.
+
+Usage:
+  ${exe_filename:?} <repository> <pr_number> <anchor_string> <new_body>
+
+SUBCOMMAND:
+    self-update
+        Update this script itself.
+        Usage:
+          ${exe_filename:?} self-update
+    help, usage
+        Show this help message.
+        Usage:
+          ${exe_filename:?} help
+EOF
+  return "${1:-0}"
+}
+
+GHPRUpdateComment() {
   # Set the required variables
   gh_repo=${1:-${GH_REPO:-}}                                   # Target Repository (e.g.: user/repo)
   gh_pr_number=${2:-${GH_PR_NUMBER:-}}                         # PR number
   gh_comment_anchor_string=${3:-${GH_COMMENT_ANCHOR_STRING:-}} # Anchor string in the comment to be updated
   gh_comment_new_body=${4:-${GH_COMMENT_NEW_BODY:-}}           # New comment body
 
-  gh_pr_url="https://github.com/${gh_repo:?}/pull/${gh_pr_number:?}"
-
   if [[ -z "${gh_repo:-}" || -z "${gh_pr_number:-}" || -z "${gh_comment_anchor_string:-}" || -z "${gh_comment_new_body:-}" ]]; then
-    LogshError "Usage: $0 <repository> <pr_number> <anchor_string> <new_body>"
-    return 1
+    SubcommandUsageAndReturn 1
   fi
+
+  gh_pr_url="https://github.com/${gh_repo:?}/pull/${gh_pr_number:?}"
 
   # Get PR comments containing the anchor string
   gh_comment_ids=$(
@@ -76,4 +97,39 @@ __main__() {
   fi
 }
 
-__main__ "$@"
+
+SubcommandSelfUpdate() {
+  local self_update_url="https://raw.githubusercontent.com/hakadoriya/gh-pr-update-comment/HEAD/${exe_filename:?}"
+  local script_file_path="${0:?}"
+  local tmp_dir=/tmp/gh-pr-update-comment
+  local tmp_file=${tmp_dir:?}/${exe_filename:?}
+  local backup_file="${tmp_file:?}.backup"
+  LogshNotice "Download ${self_update_url:?}"
+  mkdir -p "${tmp_dir:?}"
+  curl -LRSs "${self_update_url:?}" -o "${tmp_file:?}"
+  LogshNotice "Take backup ${script_file_path:?} to ${backup_file:?}"
+  LogshExec mv -f "${script_file_path:?}" "${backup_file:?}"
+  LogshNotice "Show the changes between old and new"
+  LogshExec diff -u "${backup_file:?}" "${tmp_file:?}" || true
+  LogshNotice "Update ${script_file_path:?} to ${self_update_url:?}"
+  LogshExec chmod +x "${tmp_file:?}"
+  LogshExec mv -f "${tmp_file:?}" "${script_file_path:?}"
+}
+
+Main() {
+  local subcmd="${1:-}"
+
+  case "${subcmd:-}" in
+  "self-update")
+    SubcommandSelfUpdate
+    ;;
+  "help" | "usage")
+    SubcommandUsageAndReturn 0
+    ;;
+  *)
+    GHPRUpdateComment "$@"
+    ;;
+  esac
+}
+
+Main "$@"
