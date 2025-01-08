@@ -6,9 +6,7 @@
 
 ```sh
 # install
-git clone https://github.com/hakadoriya/gh-exz.git
-cd gh-exz
-gh extension install .
+gh extension install https://github.com/hakadoriya/gh-exz
 
 # usage
 gh exz
