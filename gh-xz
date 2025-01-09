@@ -114,7 +114,7 @@ SubcommandPutAnnotatedComment() {
       --method POST \
       --header "Accept: application/vnd.github+json" \
       "/repos/${gh_repo:?}/issues/${gh_pr_number:?}/comments" \
-      -f "body=${body_value:?}"
+      -F "body=${body_value:?}"
     # early return
     return 0
   fi
