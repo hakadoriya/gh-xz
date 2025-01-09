@@ -72,3 +72,32 @@ SUBCOMMAND:
         Usage:
           gh-xz help
 ```
+
+## GitHub Actions
+
+`hakadoriya-actions/setup-gh-xz` is a GitHub Actions to install `gh-xz` in GitHub Actions.
+
+### Example
+
+```yaml
+name: example
+
+on:
+  pull_request:
+
+jobs:
+  example:
+    if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: hakadoriya-actions/setup-gh-xz@v0.0.1
+      - name: Run gh xz
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          gh xz put-annotated-comment ${{ github.repository }} ${{ github.event.number }} annotation1 "This comment is posted by gh-xz."
+```
