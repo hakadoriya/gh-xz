@@ -1,0 +1,22 @@
+name: example
+
+on:
+  pull_request:
+
+jobs:
+  example:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Run gh-xz
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          # In GitHub Actions, `gh extension install` is not available because the default token always returns 404.
+          # ref: https://github.com/cli/cli/discussions/6988
+          git clone https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/hakadoriya/gh-xz ~/.local/share/gh/extensions/gh-xz
+          gh xz put-annotated-comment ${{ github.repository_owner }}/${{ github.repository }} ${{ github.event.number }} annotation1 "This comment is created by gh-xz."
