@@ -75,7 +75,7 @@ SUBCOMMAND:
 
 ## GitHub Actions
 
-`hakadoriya-actions/setup-gh-xz` is a GitHub Actions to install `gh-xz` in GitHub Actions.
+[`hakadoriya-actions/setup-gh-xz`](https://github.com/hakadoriya-actions/setup-gh-xz) is a GitHub Actions to install `gh-xz` in GitHub Actions.
 
 ### Example
 
