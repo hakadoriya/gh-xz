@@ -25,7 +25,7 @@ LogshEmergency() { test "${LOGSH_LEVEL:-0}" -gt 800 || echo "$*" | awk "{print \
 LogshExec() { LogshDebug "$ $(_logshCmd "$@")" && "$@"; }
 LogshRun() { _dlm="####R#E#C#D#E#L#I#M#I#T#E#R####" && _all=$({ _out=$("$@") && _rtn=$? || _rtn=$? && printf "\n%s" "${_dlm:?}${_out:-}" && return "${_rtn:-0}"; } 2>&1) && _rtn=$? || _rtn=$? && _dlmno=$(echo "${_all:-}" | sed -n "/${_dlm:?}/=") && _cmd=$(_logshCmd "$@") && _stdout=$(echo "${_all:-}" | tail -n +"${_dlmno:-1}" | sed "s/^${_dlm:?}//") && _stderr=$(echo "${_all:-}" | head -n "${_dlmno:-1}" | grep -v "^${_dlm:?}") && LogshInfo "$ ${_cmd:-}" && LogshInfo "${_stdout:-}" && { [ -z "${_stderr:-}" ] || LogshWarning "${_stderr:?}"; } && return "${_rtn:-0}"; }
 
-SubcommandPRGetAnnotatedComment() {
+SubcommandGetAnnotatedComment() {
   gh_repo=${1:-${GH_REPO:-}}                                           # Target Repository (e.g.: user/repo)
   gh_pr_number=${2:-${GH_PR_NUMBER:-}}                                 # PR number
   gh_comment_annotation_string=${3:-${GH_COMMENT_ANNOTATION_STRING:-}} # Annotation string in the comment to be updated
@@ -63,7 +63,7 @@ SubcommandPRGetAnnotatedComment() {
     --jq ".body"
 }
 
-SubcommandPRUpsertAnnotatedComment() {
+SubcommandPutAnnotatedComment() {
   # Set the required variables
   gh_repo=${1:-${GH_REPO:-}}                                           # Target Repository (e.g.: user/repo)
   gh_pr_number=${2:-${GH_PR_NUMBER:-}}                                 # PR number
@@ -76,7 +76,7 @@ SubcommandPRUpsertAnnotatedComment() {
 
   # If the new comment body is a file (or - means stdin), read the file
   if [[ "${gh_comment_new_body:?}" =~ ^@ ]] && ([[ -e "${gh_comment_new_body#@}" ]] || [[ "${gh_comment_new_body#@}" = - ]]); then
-    gh_comment_new_body_file=/tmp/gh-xz-$$-pr-upsert-annotated-comment-new-body-file
+    gh_comment_new_body_file=/tmp/gh-xz-$$-put-annotated-comment-new-body-file
     cat "${gh_comment_new_body#@}" >"${gh_comment_new_body_file:?}"
     chmod 600 "${gh_comment_new_body_file:?}"
     trap "rm -f ${gh_comment_new_body_file:?}" EXIT
@@ -107,14 +107,14 @@ SubcommandPRUpsertAnnotatedComment() {
 
   # If no comment that contains the annotation string is found, Insert a new one
   if [[ -z "${gh_comment_ids:-}" ]]; then
-    body_opts=("--body" "${gh_comment_new_body:?}")
-    [[ -z "${gh_comment_new_body_file:-}" ]] || body_opts=("--body-file" "${gh_comment_new_body_file:?}")
+    body_value="${gh_comment_new_body:?}"
+    [[ -z "${gh_comment_new_body_file:-}" ]] || body_value="@${gh_comment_new_body_file:?}"
     LogshExec \
-      gh pr \
-      --repo "${gh_repo:?}" \
-      comment \
-      "${gh_pr_number:?}" \
-      "${body_opts[@]:?}"
+      gh api \
+      --method POST \
+      --header "Accept: application/vnd.github+json" \
+      "/repos/${gh_repo:?}/issues/${gh_pr_number:?}/comments" \
+      -f "body=${body_value:?}"
     # early return
     return 0
   fi
@@ -157,20 +157,20 @@ Usage:
   ${EXE_FILENAME:?} <SUBCOMMAND>
 
 SUBCOMMAND:
-    pr-get-annotated-comment
-        Get a comment that has a specific annotation string in a pull request.
+    get-annotated-comment
+        Get a comment that has a specific annotation string in a issue or pull request.
         Usage:
-          ${EXE_FILENAME:?} pr-get-annotated-comment <OWNER/REPOSITORY> <PR_NUMBER> <ANCHOR_STRING>
+          ${EXE_FILENAME:?} get-annotated-comment <OWNER/REPOSITORY> <PR_NUMBER> <ANCHOR_STRING>
         e.g.:
-          ${EXE_FILENAME:?} pr-get-annotated-comment owner/repo 123 "annotation"
-    pr-upsert-annotated-comment
-        Upsert a comment that has a specific annotation string in a pull request.
+          ${EXE_FILENAME:?} get-annotated-comment owner/repo 123 "annotation"
+    put-annotated-comment
+        Put a comment that has a specific annotation string in a issue or pull request.
         Usage:
-          ${EXE_FILENAME:?} pr-upsert-annotated-comment <OWNER/REPOSITORY> <PR_NUMBER> <ANCHOR_STRING> <COMMENT_NEW_BODY_CONTENT|COMMENT_NEW_BODY_FILE>
+          ${EXE_FILENAME:?} put-annotated-comment <OWNER/REPOSITORY> <PR_NUMBER> <ANCHOR_STRING> <COMMENT_NEW_BODY_CONTENT|COMMENT_NEW_BODY_FILE>
         e.g.:
-          ${EXE_FILENAME:?} pr-upsert-annotated-comment owner/repo 123 "annotation" "This is a new comment."
-          ${EXE_FILENAME:?} pr-upsert-annotated-comment owner/repo 123 "annotation" @./comment.md
-          cat ./comment.md | ${EXE_FILENAME:?} pr-upsert-annotated-comment owner/repo 123 "annotation" @-
+          ${EXE_FILENAME:?} put-annotated-comment owner/repo 123 "annotation" "This is a new comment."
+          ${EXE_FILENAME:?} put-annotated-comment owner/repo 123 "annotation" @./comment.md
+          cat ./comment.md | ${EXE_FILENAME:?} put-annotated-comment owner/repo 123 "annotation" @-
     help, usage
         Show this help message.
         Usage:
@@ -183,13 +183,13 @@ Main() {
   local subcmd="${1:-}"
 
   case "${subcmd:-}" in
-  "pr-get-annotated-comment")
+  "get-annotated-comment")
     shift
-    SubcommandPRGetAnnotatedComment "$@"
+    SubcommandGetAnnotatedComment "$@"
     ;;
-  "pr-upsert-annotated-comment")
+  "put-annotated-comment")
     shift
-    SubcommandPRUpsertAnnotatedComment "$@"
+    SubcommandPutAnnotatedComment "$@"
     ;;
   "self-install")
     SubcommandSelfInstall
