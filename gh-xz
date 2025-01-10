@@ -168,7 +168,7 @@ SUBCOMMAND:
         Usage:
           ${EXE_FILENAME:?} put-anchored-comment <OWNER/REPOSITORY> <PR_NUMBER> <ANCHOR_STRING> <COMMENT_NEW_BODY_CONTENT|COMMENT_NEW_BODY_FILE>
         e.g.:
-          ${EXE_FILENAME:?} put-anchored-comment owner/repo 123 "anchor" "This is a new comment."
+          ${EXE_FILENAME:?} put-anchored-comment owner/repo 123 "anchor" "This anchored comment is posted by gh-xz."
           ${EXE_FILENAME:?} put-anchored-comment owner/repo 123 "anchor" @./comment.md
           cat ./comment.md | ${EXE_FILENAME:?} put-anchored-comment owner/repo 123 "anchor" @-
     help, usage
