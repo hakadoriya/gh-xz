@@ -20,7 +20,7 @@ Get a comment that has a specific anchor string in a pull request.
 
 ```console
 $ gh xz get-anchored-comment owner/repo 123 anchor1
-This is a comment.
+This anchored comment is posted by gh-xz.
 
 <!-- anchor1 -->
 ```
@@ -30,17 +30,17 @@ This is a comment.
 Put a comment that has a specific anchor string in a issue or pull request.
 
 ```console
-$ gh xz put-anchored-comment owner/repo 123 anchor1 "This is a comment."
+$ gh xz put-anchored-comment owner/repo 123 anchor1 "This anchored comment is posted by gh-xz."
 
 $ gh xz get-anchored-comment owner/repo 123 anchor1
-This is a comment.
+This anchored comment is posted by gh-xz.
 
 <!-- anchor1 -->
 
-$ gh xz put-anchored-comment owner/repo 123 anchor1 "This is a new comment."
+$ gh xz put-anchored-comment owner/repo 123 anchor1 "This anchored comment is updated by gh-xz."
 
 $ gh xz get-anchored-comment owner/repo 123 anchor1
-This is a new comment.
+This anchored comment is updated by gh-xz.
 
 <!-- anchor1 -->
 ```
@@ -66,7 +66,7 @@ SUBCOMMAND:
         Usage:
           gh-xz put-anchored-comment <OWNER/REPOSITORY> <PR_NUMBER> <ANCHOR_STRING> <COMMENT_NEW_BODY_CONTENT|COMMENT_NEW_BODY_FILE>
         e.g.:
-          gh-xz put-anchored-comment owner/repo 123 "anchor" "This is a new comment."
+          gh-xz put-anchored-comment owner/repo 123 "anchor" "This anchored comment is posted by gh-xz."
           gh-xz put-anchored-comment owner/repo 123 "anchor" @./comment.md
           cat ./comment.md | gh-xz put-anchored-comment owner/repo 123 "anchor" @-
     help, usage
@@ -101,5 +101,5 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
-          gh xz put-anchored-comment ${{ github.repository }} ${{ github.event.number }} anchor1 "This comment is posted by gh-xz."
+          gh xz put-anchored-comment ${{ github.repository }} ${{ github.event.number }} anchor1 "This anchored comment is posted by gh-xz."
 ```
