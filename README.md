@@ -14,33 +14,35 @@ gh xz
 
 ## Features
 
-### `get-annotated-comment`
+### `get-anchored-comment`
 
-Get a comment that has a specific annotation string in a pull request.
+Get a comment that has a specific anchor string in a pull request.
 
 ```console
-$ gh xz get-annotated-comment owner/repo 123 annotation1
+$ gh xz get-anchored-comment owner/repo 123 anchor1
 This is a comment.
 
-<!-- annotation1 -->
+<!-- anchor1 -->
 ```
 
-### `put-annotated-comment`
+### `put-anchored-comment`
 
-Put a comment that has a specific annotation string in a issue or pull request.
+Put a comment that has a specific anchor string in a issue or pull request.
 
 ```console
-$ gh xz get-annotated-comment owner/repo 123 annotation1
+$ gh xz put-anchored-comment owner/repo 123 anchor1 "This is a comment."
+
+$ gh xz get-anchored-comment owner/repo 123 anchor1
 This is a comment.
 
-<!-- annotation1 -->
+<!-- anchor1 -->
 
-$ gh xz put-annotated-comment owner/repo 123 annotation1 "This is a new comment."
+$ gh xz put-anchored-comment owner/repo 123 anchor1 "This is a new comment."
 
-$ gh xz get-annotated-comment owner/repo 123 annotation1
+$ gh xz get-anchored-comment owner/repo 123 anchor1
 This is a new comment.
 
-<!-- annotation1 -->
+<!-- anchor1 -->
 ```
 
 ## Usage
@@ -53,20 +55,20 @@ Usage:
   gh-xz <SUBCOMMAND>
 
 SUBCOMMAND:
-    get-annotated-comment
-        Get a comment that has a specific annotation string in a issue or pull request.
+    get-anchored-comment
+        Get a comment that has a specific anchor string in a issue or pull request.
         Usage:
-          gh-xz get-annotated-comment <OWNER/REPOSITORY> <PR_NUMBER> <ANCHOR_STRING>
+          gh-xz get-anchored-comment <OWNER/REPOSITORY> <PR_NUMBER> <ANCHOR_STRING>
         e.g.:
-          gh-xz get-annotated-comment owner/repo 123 "annotation"
-    put-annotated-comment
-        Put a comment that has a specific annotation string in a issue or pull request.
+          gh-xz get-anchored-comment owner/repo 123 "anchor"
+    put-anchored-comment
+        Put a comment that has a specific anchor string in a issue or pull request.
         Usage:
-          gh-xz put-annotated-comment <OWNER/REPOSITORY> <PR_NUMBER> <ANCHOR_STRING> <COMMENT_NEW_BODY_CONTENT|COMMENT_NEW_BODY_FILE>
+          gh-xz put-anchored-comment <OWNER/REPOSITORY> <PR_NUMBER> <ANCHOR_STRING> <COMMENT_NEW_BODY_CONTENT|COMMENT_NEW_BODY_FILE>
         e.g.:
-          gh-xz put-annotated-comment owner/repo 123 "annotation" "This is a new comment."
-          gh-xz put-annotated-comment owner/repo 123 "annotation" @./comment.md
-          cat ./comment.md | gh-xz put-annotated-comment owner/repo 123 "annotation" @-
+          gh-xz put-anchored-comment owner/repo 123 "anchor" "This is a new comment."
+          gh-xz put-anchored-comment owner/repo 123 "anchor" @./comment.md
+          cat ./comment.md | gh-xz put-anchored-comment owner/repo 123 "anchor" @-
     help, usage
         Show this help message.
         Usage:
@@ -99,5 +101,5 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
-          gh xz put-annotated-comment ${{ github.repository }} ${{ github.event.number }} annotation1 "This comment is posted by gh-xz."
+          gh xz put-anchored-comment ${{ github.repository }} ${{ github.event.number }} anchor1 "This comment is posted by gh-xz."
 ```

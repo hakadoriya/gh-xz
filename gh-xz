@@ -25,28 +25,28 @@ LogshEmergency() { test "${LOGSH_LEVEL:-0}" -gt 800 || echo "$*" | awk "{print \
 LogshExec() { LogshDebug "$ $(_logshCmd "$@")" && "$@"; }
 LogshRun() { _dlm="####R#E#C#D#E#L#I#M#I#T#E#R####" && _all=$({ _out=$("$@") && _rtn=$? || _rtn=$? && printf "\n%s" "${_dlm:?}${_out:-}" && return "${_rtn:-0}"; } 2>&1) && _rtn=$? || _rtn=$? && _dlmno=$(echo "${_all:-}" | sed -n "/${_dlm:?}/=") && _cmd=$(_logshCmd "$@") && _stdout=$(echo "${_all:-}" | tail -n +"${_dlmno:-1}" | sed "s/^${_dlm:?}//") && _stderr=$(echo "${_all:-}" | head -n "${_dlmno:-1}" | grep -v "^${_dlm:?}") && LogshInfo "$ ${_cmd:-}" && LogshInfo "${_stdout:-}" && { [ -z "${_stderr:-}" ] || LogshWarning "${_stderr:?}"; } && return "${_rtn:-0}"; }
 
-SubcommandGetAnnotatedComment() {
+SubcommandGetAnchoredComment() {
   gh_repo=${1:-${GH_REPO:-}}                                           # Target Repository (e.g.: user/repo)
   gh_pr_number=${2:-${GH_PR_NUMBER:-}}                                 # PR number
-  gh_comment_annotation_string=${3:-${GH_COMMENT_ANNOTATION_STRING:-}} # Annotation string in the comment to be updated
+  gh_comment_anchor_string=${3:-${GH_COMMENT_ANCHOR_STRING:-}} # Annotation string in the comment to be updated
 
-  # Get PR comments containing the annotation string
+  # Get PR comments containing the anchor string
   gh_comment_ids=$(
     LogshExec \
       gh api \
       --paginate \
       "/repos/${gh_repo:?}/issues/${gh_pr_number:?}/comments" \
-      --jq ".[] | select(.body | contains(\"${gh_comment_annotation_string//\"/\\\"}\")) | .id"
+      --jq ".[] | select(.body | contains(\"${gh_comment_anchor_string//\"/\\\"}\")) | .id"
   )
 
-  # If no comment that contains the annotation string is found, return 1
+  # If no comment that contains the anchor string is found, return 1
   if [[ -z "${gh_comment_ids:-}" ]]; then
     return 1
   fi
 
   # Abnormal termination if the ID is not one
   if [[ $(echo "${gh_comment_ids:?}" | wc -l) -ne 1 ]]; then
-    LogshError "Error: Multiple comments containing the annotation string \"${gh_comment_annotation_string:?}\" found."
+    LogshError "Error: Multiple comments containing the anchor string \"${gh_comment_anchor_string:?}\" found."
     LogshError "Comment IDs: ${gh_comment_ids//$'\n'/, }"
     while read -r comment_id; do
       LogshError "${gh_pr_url:?}#issuecomment-${comment_id}"
@@ -63,49 +63,49 @@ SubcommandGetAnnotatedComment() {
     --jq ".body"
 }
 
-SubcommandPutAnnotatedComment() {
+SubcommandPutAnchoredComment() {
   # Set the required variables
   gh_repo=${1:-${GH_REPO:-}}                                           # Target Repository (e.g.: user/repo)
   gh_pr_number=${2:-${GH_PR_NUMBER:-}}                                 # PR number
-  gh_comment_annotation_string=${3:-${GH_COMMENT_ANNOTATION_STRING:-}} # Annotation string in the comment to be updated
+  gh_comment_anchor_string=${3:-${GH_COMMENT_ANCHOR_STRING:-}} # Annotation string in the comment to be updated
   gh_comment_new_body=${4:-${GH_COMMENT_NEW_BODY:-}}                   # New comment body
 
-  if [[ -z "${gh_repo:-}" || -z "${gh_pr_number:-}" || -z "${gh_comment_annotation_string:-}" || -z "${gh_comment_new_body:-}" ]]; then
+  if [[ -z "${gh_repo:-}" || -z "${gh_pr_number:-}" || -z "${gh_comment_anchor_string:-}" || -z "${gh_comment_new_body:-}" ]]; then
     SubcommandUsageAndReturn 1
   fi
 
   # If the new comment body is a file (or - means stdin), read the file
   if [[ "${gh_comment_new_body:?}" =~ ^@ ]] && ([[ -e "${gh_comment_new_body#@}" ]] || [[ "${gh_comment_new_body#@}" = - ]]); then
-    gh_comment_new_body_file=/tmp/gh-xz-$$-put-annotated-comment-new-body-file
+    gh_comment_new_body_file=/tmp/gh-xz-$$-put-anchored-comment-new-body-file
     cat "${gh_comment_new_body#@}" >"${gh_comment_new_body_file:?}"
     chmod 600 "${gh_comment_new_body_file:?}"
     trap "rm -f ${gh_comment_new_body_file:?}" EXIT
   fi
 
-  # If the annotation string does not start with '<!--' and end with '-->', add them
-  if ! [[ "${gh_comment_annotation_string:?}" =~ ^\<\!--.*--\>$ ]]; then
-    gh_comment_annotation_string="<!-- ${gh_comment_annotation_string:?} -->"
+  # If the anchor string does not start with '<!--' and end with '-->', add them
+  if ! [[ "${gh_comment_anchor_string:?}" =~ ^\<\!--.*--\>$ ]]; then
+    gh_comment_anchor_string="<!-- ${gh_comment_anchor_string:?} -->"
   fi
 
-  # If the new comment body does not end with the annotation string, add a newline and the annotation string
-  if [[ -z "${gh_comment_new_body_file:-}" ]] && (! [[ "${gh_comment_new_body:?}" =~ .*${gh_comment_annotation_string:?}\s*$ ]]); then
-    gh_comment_new_body="${gh_comment_new_body:?}${LF:?}${LF:?}${gh_comment_annotation_string:?}"
-  elif [[ -n "${gh_comment_new_body_file:-}" ]] && (! [[ "$(cat "${gh_comment_new_body_file:?}")" =~ .*${gh_comment_annotation_string:?}\s*$ ]]); then
-    echo "${LF:?}${LF:?}${gh_comment_annotation_string:?}" >>"${gh_comment_new_body_file:?}"
+  # If the new comment body does not end with the anchor string, add a newline and the anchor string
+  if [[ -z "${gh_comment_new_body_file:-}" ]] && (! [[ "${gh_comment_new_body:?}" =~ .*${gh_comment_anchor_string:?}\s*$ ]]); then
+    gh_comment_new_body="${gh_comment_new_body:?}${LF:?}${LF:?}${gh_comment_anchor_string:?}"
+  elif [[ -n "${gh_comment_new_body_file:-}" ]] && (! [[ "$(cat "${gh_comment_new_body_file:?}")" =~ .*${gh_comment_anchor_string:?}\s*$ ]]); then
+    echo "${LF:?}${LF:?}${gh_comment_anchor_string:?}" >>"${gh_comment_new_body_file:?}"
   fi
 
   gh_pr_url="https://github.com/${gh_repo:?}/pull/${gh_pr_number:?}"
 
-  # Get PR comments containing the annotation string
+  # Get PR comments containing the anchor string
   gh_comment_ids=$(
     LogshExec \
       gh api \
       --paginate \
       "/repos/${gh_repo:?}/issues/${gh_pr_number:?}/comments" \
-      --jq ".[] | select(.body | contains(\"${gh_comment_annotation_string//\"/\\\"}\")) | .id"
+      --jq ".[] | select(.body | contains(\"${gh_comment_anchor_string//\"/\\\"}\")) | .id"
   )
 
-  # If no comment that contains the annotation string is found, Insert a new one
+  # If no comment that contains the anchor string is found, Insert a new one
   if [[ -z "${gh_comment_ids:-}" ]]; then
     body_value="${gh_comment_new_body:?}"
     [[ -z "${gh_comment_new_body_file:-}" ]] || body_value="@${gh_comment_new_body_file:?}"
@@ -121,7 +121,7 @@ SubcommandPutAnnotatedComment() {
 
   # Abnormal termination if the ID is not one
   if [[ $(echo "${gh_comment_ids:?}" | wc -l) -ne 1 ]]; then
-    LogshError "Error: Multiple comments containing the annotation string \"${gh_comment_annotation_string:?}\" found."
+    LogshError "Error: Multiple comments containing the anchor string \"${gh_comment_anchor_string:?}\" found."
     LogshError "Comment IDs: ${gh_comment_ids//$'\n'/, }"
     while read -r comment_id; do
       LogshError "${gh_pr_url:?}#issuecomment-${comment_id}"
@@ -157,20 +157,20 @@ Usage:
   ${EXE_FILENAME:?} <SUBCOMMAND>
 
 SUBCOMMAND:
-    get-annotated-comment
-        Get a comment that has a specific annotation string in a issue or pull request.
+    get-anchored-comment
+        Get a comment that has a specific anchor string in a issue or pull request.
         Usage:
-          ${EXE_FILENAME:?} get-annotated-comment <OWNER/REPOSITORY> <PR_NUMBER> <ANCHOR_STRING>
+          ${EXE_FILENAME:?} get-anchored-comment <OWNER/REPOSITORY> <PR_NUMBER> <ANCHOR_STRING>
         e.g.:
-          ${EXE_FILENAME:?} get-annotated-comment owner/repo 123 "annotation"
-    put-annotated-comment
-        Put a comment that has a specific annotation string in a issue or pull request.
+          ${EXE_FILENAME:?} get-anchored-comment owner/repo 123 "anchor"
+    put-anchored-comment
+        Put a comment that has a specific anchor string in a issue or pull request.
         Usage:
-          ${EXE_FILENAME:?} put-annotated-comment <OWNER/REPOSITORY> <PR_NUMBER> <ANCHOR_STRING> <COMMENT_NEW_BODY_CONTENT|COMMENT_NEW_BODY_FILE>
+          ${EXE_FILENAME:?} put-anchored-comment <OWNER/REPOSITORY> <PR_NUMBER> <ANCHOR_STRING> <COMMENT_NEW_BODY_CONTENT|COMMENT_NEW_BODY_FILE>
         e.g.:
-          ${EXE_FILENAME:?} put-annotated-comment owner/repo 123 "annotation" "This is a new comment."
-          ${EXE_FILENAME:?} put-annotated-comment owner/repo 123 "annotation" @./comment.md
-          cat ./comment.md | ${EXE_FILENAME:?} put-annotated-comment owner/repo 123 "annotation" @-
+          ${EXE_FILENAME:?} put-anchored-comment owner/repo 123 "anchor" "This is a new comment."
+          ${EXE_FILENAME:?} put-anchored-comment owner/repo 123 "anchor" @./comment.md
+          cat ./comment.md | ${EXE_FILENAME:?} put-anchored-comment owner/repo 123 "anchor" @-
     help, usage
         Show this help message.
         Usage:
@@ -183,13 +183,13 @@ Main() {
   local subcmd="${1:-}"
 
   case "${subcmd:-}" in
-  "get-annotated-comment")
+  "get-anchored-comment")
     shift
-    SubcommandGetAnnotatedComment "$@"
+    SubcommandGetAnchoredComment "$@"
     ;;
-  "put-annotated-comment")
+  "put-anchored-comment")
     shift
-    SubcommandPutAnnotatedComment "$@"
+    SubcommandPutAnchoredComment "$@"
     ;;
   "self-install")
     SubcommandSelfInstall
