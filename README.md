@@ -37,10 +37,10 @@ This anchored comment is posted by gh-xz.
 
 <!-- anchor1 -->
 
-$ gh xz put-anchored-comment owner/repo 123 anchor1 "This anchored comment is updated by gh-xz."
+$ gh xz put-anchored-comment owner/repo 123 anchor1 "UPDATED by gh-xz."
 
 $ gh xz get-anchored-comment owner/repo 123 anchor1
-This anchored comment is updated by gh-xz.
+UPDATED by gh-xz.
 
 <!-- anchor1 -->
 ```
