@@ -2,8 +2,8 @@
 set -E -e -u -o pipefail
 
 declare -r LOGSH_LEVEL=${LOGSH_LEVEL:-101}
-declare -r TMP_DIR=/tmp/.gh-xz
 declare -r EXE_FILENAME="gh-xz"
+declare -r TMP_DIR="/tmp/.${EXE_FILENAME:?}"
 declare -r LF=$'\n'
 declare -r REMOTE_REPO="https://github.com/hakadoriya/gh-xz"
 
