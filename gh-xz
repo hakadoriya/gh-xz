@@ -76,7 +76,8 @@ SubcommandPutAnchoredComment() {
 
   # If the new comment body is a file (or - means stdin), read the file
   if [[ "${gh_comment_new_body:?}" =~ ^@ ]] && ([[ -e "${gh_comment_new_body#@}" ]] || [[ "${gh_comment_new_body#@}" = - ]]); then
-    gh_comment_new_body_file=/tmp/gh-xz-$$-put-anchored-comment-new-body-file
+    gh_comment_new_body_file=/tmp/.gh-xz/gh-xz-$$-put-anchored-comment-new-body-file
+    mkdir -p /tmp/.gh-xz
     cat "${gh_comment_new_body#@}" >"${gh_comment_new_body_file:?}"
     chmod 600 "${gh_comment_new_body_file:?}"
     trap "rm -f ${gh_comment_new_body_file:?}" EXIT
