@@ -2,9 +2,10 @@
 set -E -e -u -o pipefail
 
 declare -r LOGSH_LEVEL=${LOGSH_LEVEL:-101}
+declare -r TMP_DIR=/tmp/.gh-xz
 declare -r EXE_FILENAME="gh-xz"
 declare -r LF=$'\n'
-declare -r GH_XZ_REPO="https://github.com/hakadoriya/gh-xz"
+declare -r REMOTE_REPO="https://github.com/hakadoriya/gh-xz"
 
 # LICENSE: https://github.com/hakadoriya/log.sh/blob/HEAD/LICENSE
 # Common
@@ -76,8 +77,8 @@ SubcommandPutAnchoredComment() {
 
   # If the new comment body is a file (or - means stdin), read the file
   if [[ "${gh_comment_new_body:?}" =~ ^@ ]] && ([[ -e "${gh_comment_new_body#@}" ]] || [[ "${gh_comment_new_body#@}" = - ]]); then
-    gh_comment_new_body_file=/tmp/.gh-xz/gh-xz-$$-put-anchored-comment-new-body-file
-    mkdir -p /tmp/.gh-xz
+    gh_comment_new_body_file="${TMP_DIR:?}/gh-xz-$$-put-anchored-comment-new-body-file"
+    mkdir -p "${TMP_DIR:?}"
     cat "${gh_comment_new_body#@}" >"${gh_comment_new_body_file:?}"
     chmod 600 "${gh_comment_new_body_file:?}"
     trap "rm -f ${gh_comment_new_body_file:?}" EXIT
@@ -143,7 +144,7 @@ SubcommandPutAnchoredComment() {
 }
 
 SubcommandSelfInstall() {
-  LogshExec gh extension install "${GH_XZ_REPO:?}"
+  LogshExec gh extension install "${REMOTE_REPO:?}"
 }
 
 SubcommandSelfUpdate() {
